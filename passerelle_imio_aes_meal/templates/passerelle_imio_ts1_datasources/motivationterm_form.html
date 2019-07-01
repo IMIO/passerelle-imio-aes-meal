@@ -1,0 +1,38 @@
+{% extends "passerelle/manage.html" %}
+{% load i18n %}
+{% load url from future %}
+
+{% block breadcrumb %}
+{{ block.super }}
+<a href="{{ resource.get_absolute_url }}">{{ resource.title }}</a>
+{% if object.id %}
+<a href="{{ object.id }}">{{ object.slug }}</a>
+{% else %}
+<a href="#">{% trans 'Add Query' %}</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+{%if object.slug %}
+<p style="color:red">{% trans 'SLUG (readonly item id)'%}&nbsp;:&nbsp; 
+<b>{{object.slug}}</b></p><hr />
+{%endif%}
+<p>
+<form method="post" enctype="multipart/form-data">
+   <div id="form-content">
+     {% csrf_token %}
+     {{ form.as_p }}
+   </div>
+   {% block buttons %}
+   <div class="buttons">
+     <button>{% trans "Save" %}</button>
+     <button>{% trans "Cancel" %}</button>     
+     <!--a class="cancel" href="{{ resource.get_absolute_url }}">{% trans 'Cancel' %}</a-->
+   </div>
+   {% endblock %}
+</form>
+</p>
+
+
+{% endblock %}

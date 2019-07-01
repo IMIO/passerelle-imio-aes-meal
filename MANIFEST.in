@@ -1,0 +1,6 @@
+recursive-include passerelle_imio_ts1_datasources/static *.css *.png
+recursive-include passerelle_imio_ts1_datasources/templates *.html *.txt
+recursive-include passerelle_imio_ts1_datasources/locale *.po *.mo
+include MANIFEST.in
+include VERSION
+include README.md

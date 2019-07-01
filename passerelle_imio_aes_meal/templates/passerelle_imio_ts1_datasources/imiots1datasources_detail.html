@@ -1,0 +1,45 @@
+{% extends "passerelle/manage/service_view.html" %}
+{% load i18n passerelle %}
+
+{% block content %}
+{% if object.description %}{{object.description|linebreaks}}{% endif %}
+<h3>{%trans 'Destinations list' %}</h3>
+<table class="main">
+<thead>
+<tr><th>{% trans 'Label' %}</th><th>{% trans 'Price' %}</th><th>{% trans 'Description' %}</th><th>{% trans 'Payment required' %}</th><th>&nbsp;</th></tr>
+</thead>
+<tbody>
+{% for destination in object.get_destination_terms %}
+<tr><td><a href="{% url 'destinationterm-update' pk=destination.id connector_slug=object.slug %}" title="{{destination.slug}}">{{destination.text}}</a></td><td>{{destination.price}}</td><td>{{destination.description}}</td>
+  <td>{{destination.paymentrequired}}</td>
+    <td><a rel="popup" href="{% url 'destinationterm-delete' pk=destination.id connector_slug=object.slug %}" class="icon-remove-sign"></a></td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+<p>
+<a class="icon-plus button" href="{% url 'destinationterm-add' connector_slug=object.slug %}">{% trans 'Add new destination' %}</a>
+</p>
+<hr />
+
+<h3>{%trans 'Motivations list' %}</h3>
+<table class="main">
+<thead>
+<tr><th>{% trans 'Label' %}</th><th>{% trans 'Price' %}</th><th>{% trans 'Description' %}</th><th>&nbsp;</th></tr>
+</thead>
+<tbody>
+{% for motivation in object.get_motivation_terms %}
+<tr><td><a href="{% url 'motivationterm-update' pk=motivation.id connector_slug=object.slug %}" title="{{motivation.slug}}">{{motivation.text}}</a></td>
+    <td>{{motivation.price}}</td>
+    <td>{{motivation.description}}</td>
+    <td><a rel="popup" href="{% url 'motivationterm-delete' pk=motivation.id connector_slug=object.slug %}" class="icon-remove-sign"></a></td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+<p>
+<a class="icon-plus button" href="{% url 'motivationterm-add' connector_slug=object.slug %}">{% trans 'Add new motivation' %}</a>
+</p>
+
+{% endblock %}

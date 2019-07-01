@@ -1,0 +1,16 @@
+{% extends "passerelle/manage.html" %}
+{% load i18n %}
+
+{% block appbar %}
+<h2>{% trans 'Removing Destinationterm' %}</h2>
+{% endblock %}
+
+{% block content %}
+<form method="post">
+  {% csrf_token %}
+  <div class="buttons">
+    <button>{% trans 'Confirm Deletion' %}</button>
+    <a class="cancel" href="#">{% trans 'Cancel' %}</a>
+  </div>
+</form>
+{% endblock %}
