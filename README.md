@@ -16,16 +16,7 @@ Installation
 Usage
 -----
 
- - create and configure new connector
-   - Title/description: whatever you want
-   - URL: https://e-services.liege.be:8443/
-   - Certificate check: uncheck if the service has no valid certificate
-
- - test service by clicking on the available links
-   - the /voies/ endpoint may take some time as it will query for everything
-     (but will be cut at 51 items)
-   - the /voies/?q=... endoint is set with an example string, feel free to
-     change it.
+ -
 
 
 Usage in w.c.s.
