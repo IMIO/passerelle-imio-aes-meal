@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+
 # passerelle-imio-aes-meal - passerelle connector for aes meal management
 # Copyright (C) 2016  Entr'ouvert / Imio
 #
@@ -25,17 +28,31 @@ from django.utils.translation import ugettext_lazy as _
 from passerelle.base.models import BaseResource
 from passerelle.utils.api import endpoint
 
-
+import ast
+import datetime
+import json
 
 class ImioAesMeal(BaseResource):
 
     category = _('Datasources manager')
     meal_file = models.FileField(_('AES Meal file'), upload_to='aes_meal',
         help_text=_('Supported file formats: csv, json'))
-    
+
+    # [fruit,...]
+    ignore_types =  models.CharField(_('Types to ignore'), default='', max_length=128, blank=True)
+    # An nothing type item can be select.
+    nothing = models.BooleanField(default=True,
+            verbose_name=_('Authorize to select "nothing" item'))
+            #, help_text='If "Yes" Use with "one_choice_by_date" set on Additional css class property field')
+    #Personal labels
+    personal_labels = models.TextField(default="{}", verbose_name='Personalize labels', blank=True, help_text='Personal labels: define like a dictionary : {"fruit":"new label fruit","repas":"repas chaud",...}')
+
+    multi_select = models.BooleanField(default=True,
+            verbose_name=_('Allows to select multiple items'))
     class Meta:
         verbose_name = _('Aes meal importer and serve in wcs')
 
+    datas = {}
     @classmethod
     def get_verbose_name(cls):
         return cls._meta.verbose_name
@@ -62,41 +79,90 @@ class ImioAesMeal(BaseResource):
         return rows
 
     def iddate(self, currdate):
+        month = currdate.split('/')[1]
+        hack_month = '{:02d}'.format(datetime.date.today().month + 1)
+        currdate = currdate.replace('/' +month+ '/', '/' +hack_month+ '/')
         return currdate.replace('/','-')
 
     @endpoint(perm='can_access', methods=['get'])
-    def json(self, request, **kwargs):
+    def json_current_month(self, request, **kwargs):
+        datas = self.json(request).get('data')
+        datas = json.dumps(datas).replace('month','{:02d}'.format(datetime.date.today().month + 1))
+        return json.loads(datas)
+
+
+    def json_and_ignore(self):
+        meals = []
+        datas = self.json().get('data')
+        for meal in self.datas.get('data'):
+            if meal.get('type').upper() not in self.ignore_types.upper():
+                meals.append(meal)
+        self.datas['data'] = meals
+        return self.datas
+
+
+    # {"potage":"Potage - tartine",
+    #       "repas":"Repas chaud"}
+    def json_add_types_and_labels(self):
+        pl = ast.literal_eval(self.personal_labels)
+        meals = []
+        for meal in self.datas.get('data'):
+            if meal.get('type') in pl:
+                meal['text'] = '[{}];{}'.format(pl.get(meal.get('type')), meal.get('text'))
+            meals.append(meal)
+        self.datas['data'] = meals
+        return self.datas
+
+
+    @endpoint(perm='can_access', methods=['get'])
+    def get(self, request=None, **kwargs):
+        self.datas = self.json()
+        if self.personal_labels:
+            self.datas = self.json_add_types_and_labels()
+        if len(self.ignore_types) > 0:
+            self.datas = self.json_and_ignore()
+        return self.datas
+
+    def json(self):
         meals = []
         rows = self.get_rows()
         num_col = 0
-        try:            
+        nothing_already_add = False
+        multi_select = 'mult' if self.multi_select is True and self.nothing is False else ''
+        try:
             for r in rows:
                 num_col = 0
                 for col in r:
                     iddate = self.iddate(r[0])
+                    if self.nothing is True and nothing_already_add is False:
+                        meals.append( {"id":"_{}_{}".format(iddate, 'nothing'),
+                            "text":"Rien",
+                            "type":"nothing"})
+                        nothing_already_add = True
                     if num_col == 4 and len(r[4]) > 1:
                         meals.append(
-                                {"id":"_{}_{}".format(iddate,'exception'),
+                                {"id":"{}_{}_{}".format(multi_select, iddate, 'exception'),
                              "text":"{}".format(r[4]),
                              "type":"exception"})
                     elif len(r[4]) == 0:
                         if num_col == 1:
                             meals.append(
-                                {"id":"_{}_{}".format(iddate,'potage'),
+                                {"id":"{}_{}_{}".format(multi_select, iddate, 'potage'),
                                 "text":"{}".format(r[1]),
                                 "type":"potage"})
                         if num_col == 2:
                             meals.append(
-                                {"id":"_{}_{}".format(iddate,'repas'),
+                                {"id":"{}_{}_{}".format(multi_select, iddate, 'repas'),
                                 "text":"{}".format(r[2]),
                                 "type":"repas"})
                         if num_col == 3:
                             meals.append(
-                                {"id":"_{}_{}".format(iddate,'fruit'),
+                                {"id":"{}_{}_{}".format(multi_select, iddate, 'fruit'),
                                 "text":"{}".format(r[3]),
                                 "type":"fruit"})
                     num_col = num_col + 1
+                nothing_already_add = False
+            # self.datas = {'data':meals}
             return {'data':meals}
         except Exception as e:
-            import ipdb;ipdb.set_trace()
-
+            raise e
