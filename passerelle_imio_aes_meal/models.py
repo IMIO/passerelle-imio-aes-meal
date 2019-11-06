@@ -134,12 +134,15 @@ class ImioAesMeal(BaseResource):
                 num_col = 0
                 for col in r:
                     iddate = self.iddate(r[0])
-                    if self.nothing is True and nothing_already_add is False:
+                    is_day_off = True if len(r[4]) == 0 else False
+                    if self.nothing is True and nothing_already_add is False and is_day_off is False:
+                        # add a "nothing" choice checkbox.
                         meals.append( {"id":"_{}_{}".format(iddate, 'nothing'),
                             "text":"Rien",
                             "type":"nothing"})
                         nothing_already_add = True
-                    if num_col == 4 and len(r[4]) > 1:
+                    if num_col == 4 and is_day_off is True:
+                        # It's a day off!
                         meals.append(
                                 {"id":"{}_{}_{}".format(multi_select, iddate, 'exception'),
                              "text":"{}".format(r[4]),
