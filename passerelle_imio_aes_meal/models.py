@@ -113,6 +113,21 @@ class ImioAesMeal(BaseResource):
         self.datas['data'] = meals
         return self.datas
 
+    @endpoint(serializer_type='json-api', perm='can_access', description='Ensure than citizen selected at least one item per day when nothing mode is set up',
+            parameters={'lst_meals':{'description':'list of selected meals', 'example_value':"'_04-11-2019_potage', '_05-11-2019_potage', '_19-11-2019_potage'"}})
+    def zero_if_meals_selected_for_each_day(self, request=None, **kwargs):
+        lst_meals = request.GET['lst_meals'].split(',')
+        lst_valid_dates = []
+        if self.nothing is True:
+            all_meals = self.get()['data']
+            for m in all_meals:
+                if m.get('type') != 'exception':
+                    meal_date = m.get('id').split('_')[1]
+                    lst_valid_dates.append(meal_date)
+            nb_valid_meals = len(set(lst_valid_dates))
+            return len(lst_meals) - nb_valid_meals
+        else:
+            return 0
 
     @endpoint(perm='can_access', methods=['get'])
     def get(self, request=None, **kwargs):
@@ -134,7 +149,7 @@ class ImioAesMeal(BaseResource):
                 num_col = 0
                 for col in r:
                     iddate = self.iddate(r[0])
-                    is_day_off = True if len(r[4]) == 0 else False
+                    is_day_off = False if len(r[4]) == 0 else True
                     if self.nothing is True and nothing_already_add is False and is_day_off is False:
                         # add a "nothing" choice checkbox.
                         meals.append( {"id":"_{}_{}".format(iddate, 'nothing'),
