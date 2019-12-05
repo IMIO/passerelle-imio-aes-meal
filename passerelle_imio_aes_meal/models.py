@@ -20,6 +20,7 @@
 import ast
 import csv
 import datetime
+import time
 
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
@@ -98,6 +99,29 @@ class ImioAesMeal(BaseResource):
             currdate = currdate.replace(year, hack_year)
             currdate = currdate.replace("/" + month + "/", "/01/")
         return currdate.replace("/", "-")
+
+    @endpoint(perm='can_access', methods=['get'], description='bla bla bla')
+    def is_meals_are_up_to_date(self, request, **kwargs):
+        import ipdb;ipdb.set_trace()
+        result = False
+        first_date_record = self.get_rows()[0][0]
+        try:
+            date_object = time.strptime(first_date_record, '%d/%m/%Y')
+        except Exception:
+            return result
+        if date_object.tm_year < datetime.date.today().year:
+            return result
+        if date_object.tm_year > datetime.date.today().year + 1:
+            return result
+        if date_object.tm_year == datetime.date.today().year:
+            if date_object.tm_mon == datetime.date.today().month + 1:
+                result = True
+        if date_object.tm_year == datetime.date.today().year + 1:
+            if date_object.tm_mon == 1 and datetime.date.today().month == 12:
+                result = True
+        return result
+
+
 
     #    @endpoint(perm='can_access', methods=['get'])
     #    def json_current_month(self, request, **kwargs):
