@@ -80,15 +80,21 @@ class ImioAesMeal(BaseResource):
 
     def iddate(self, currdate):
         month = currdate.split('/')[1]
-        hack_month = '{:02d}'.format(datetime.date.today().month + 1)
-        currdate = currdate.replace('/' +month+ '/', '/' +hack_month+ '/')
+        year = currdate.split('/')[2]
+        if month != "12":
+            hack_month = '{:02d}'.format(datetime.date.today().month + 1)
+            currdate = currdate.replace('/' +month+ '/', '/' +hack_month+ '/')
+        else:
+            hack_year = '{:02d}'.format(datetime.date.today().year + 1)
+            currdate = currdate.replace(year, hack_year)
+            currdate = currdate.replace('/' +month+ '/', '/01/')
         return currdate.replace('/','-')
 
-    @endpoint(perm='can_access', methods=['get'])
-    def json_current_month(self, request, **kwargs):
-        datas = self.json(request).get('data')
-        datas = json.dumps(datas).replace('month','{:02d}'.format(datetime.date.today().month + 1))
-        return json.loads(datas)
+#    @endpoint(perm='can_access', methods=['get'])
+#    def json_current_month(self, request, **kwargs):
+#        datas = self.json(request).get('data')
+#        datas = json.dumps(datas).replace('month','{:02d}'.format(datetime.date.today().month + 1))
+#        return json.loads(datas)
 
 
     def json_and_ignore(self):
@@ -119,6 +125,7 @@ class ImioAesMeal(BaseResource):
         lst_meals = request.GET['lst_meals'].split(',')
         lst_valid_dates = []
         if self.nothing is True:
+        # This is the use-case one choice with "nothing" choice per day.
             all_meals = self.get()['data']
             for m in all_meals:
                 if m.get('type') != 'exception':
@@ -127,6 +134,7 @@ class ImioAesMeal(BaseResource):
             nb_valid_meals = len(set(lst_valid_dates))
             return len(lst_meals) - nb_valid_meals
         else:
+        # This is the use-case multi-select checkbox per day.
             return 0
 
     @endpoint(perm='can_access', methods=['get'])
