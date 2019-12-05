@@ -101,9 +101,9 @@ class ImioAesMeal(BaseResource):
         return currdate.replace("/", "-")
 
     @endpoint(perm="can_access", methods=["get"], description="True if csv file dates records are for the next month")
-    def is_meals_are_up_to_date(self, request, **kwargs):
+    def are_meals_up_to_date(self, request, **kwargs):
         result = False
-        # check only on the first date. Maybe stronger if we check on all records? 
+        # check only on the first date. Maybe stronger if we check on all records?
         first_date_record = self.get_rows()[0][0]
         try:
             date_object = time.strptime(first_date_record, "%d/%m/%Y")
