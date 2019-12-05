@@ -100,13 +100,13 @@ class ImioAesMeal(BaseResource):
             currdate = currdate.replace("/" + month + "/", "/01/")
         return currdate.replace("/", "-")
 
-    @endpoint(perm='can_access', methods=['get'], description='bla bla bla')
+    @endpoint(perm="can_access", methods=["get"], description="True if csv file dates records are for the next month")
     def is_meals_are_up_to_date(self, request, **kwargs):
-        import ipdb;ipdb.set_trace()
         result = False
+        # check only on the first date. Maybe stronger if we check on all records? 
         first_date_record = self.get_rows()[0][0]
         try:
-            date_object = time.strptime(first_date_record, '%d/%m/%Y')
+            date_object = time.strptime(first_date_record, "%d/%m/%Y")
         except Exception:
             return result
         if date_object.tm_year < datetime.date.today().year:
@@ -120,8 +120,6 @@ class ImioAesMeal(BaseResource):
             if date_object.tm_mon == 1 and datetime.date.today().month == 12:
                 result = True
         return result
-
-
 
     #    @endpoint(perm='can_access', methods=['get'])
     #    def json_current_month(self, request, **kwargs):
