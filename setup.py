@@ -28,6 +28,7 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3.8',
     ],
+    install_requires=['python3-passerelle',],
     zip_safe=False,
     cmdclass={
         'inst': inst,
