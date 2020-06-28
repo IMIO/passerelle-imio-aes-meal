@@ -30,6 +30,7 @@ setup(
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 3.5.3',
     ],
+    install_requires=['django>=1.11'],
     zip_safe=False,
     cmdclass={
         'inst': inst,
