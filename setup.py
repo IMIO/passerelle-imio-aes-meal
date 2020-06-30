@@ -13,7 +13,7 @@ class inst(install):
         os.system("sh "+path+"install_imio-ts-aes.sh")
 
 setup(
-    name='passerlle-imio-aes-meal',
+    name='passerelle-imio-aes-meal',
     author='Christophe Boulanger',
     author_email='christophe.boulanger@imio.be',
     packages=find_packages(),
