@@ -20,9 +20,11 @@
 import ast
 import csv
 import datetime
+import six
 import time
 
 from django.db import models
+from django.utils.encoding import force_str
 from django.utils.translation import ugettext_lazy as _
 from passerelle.base.models import BaseResource
 from passerelle.utils.api import endpoint
@@ -72,19 +74,52 @@ class ImioAesMeal(BaseResource):
         return ""
 
     def save(self, *args, **kwargs):
+        kwargs.pop('cache', False)
         result = super(ImioAesMeal, self).save(*args, **kwargs)
         return result
+
+    def _detect_dialect_options(self):
+        content = self.get_content_without_bom()
+        dialect = csv.Sniffer().sniff(content)
+        self.dialect_options = {
+            k: v for k, v in vars(dialect).items() if not k.startswith('_')
+        }
+
+    @property
+    def dialect_options(self):
+        """turn dict items into string
+        """
+        file_type = self.meal_file.name.split('.')[-1]
+        if file_type in ('ods', 'xls', 'xlsx'):
+            return None
+        # Set dialect_options if None
+        # if self._dialect_options is None:
+        self._detect_dialect_options()
+        self.save(cache=False)
+
+        options = {}
+        for k, v in self._dialect_options.items():
+            if isinstance(v, six.text_type):
+                v = force_str(v.encode('ascii'))
+            options[force_str(k.encode('ascii'))] = v
+
+        return options
+
+    @dialect_options.setter
+    def dialect_options(self, value):
+        self._dialect_options = value
+
 
     def get_content_without_bom(self):
         self.meal_file.seek(0)
         content = self.meal_file.read()
-        return content.decode("utf-8-sig", "ignore").encode("utf-8")
+        return force_str(content.decode("utf-8-sig", "ignore").encode("utf-8"))
 
     def get_rows(self):
         file_type = self.meal_file.name.split(".")[-1]
         if file_type == "csv":
             content = self.get_content_without_bom()
-            reader = csv.reader(content.splitlines(), delimiter="|")
+            reader = csv.reader(content.splitlines(), **self.dialect_options)
             rows = list(reader)
         return rows
 
