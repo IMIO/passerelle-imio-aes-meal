@@ -74,7 +74,7 @@ class ImioAesMeal(BaseResource):
         return ""
 
     def save(self, *args, **kwargs):
-        kwargs.pop('cache', False)
+        kwargs.pop("cache", False)
         result = super(ImioAesMeal, self).save(*args, **kwargs)
         return result
 
@@ -82,15 +82,15 @@ class ImioAesMeal(BaseResource):
         content = self.get_content_without_bom()
         dialect = csv.Sniffer().sniff(content)
         self.dialect_options = {
-            k: v for k, v in vars(dialect).items() if not k.startswith('_')
+            k: v for k, v in vars(dialect).items() if not k.startswith("_")
         }
 
     @property
     def dialect_options(self):
         """turn dict items into string
         """
-        file_type = self.meal_file.name.split('.')[-1]
-        if file_type in ('ods', 'xls', 'xlsx'):
+        file_type = self.meal_file.name.split(".")[-1]
+        if file_type in ("ods", "xls", "xlsx"):
             return None
         # Set dialect_options if None
         # if self._dialect_options is None:
@@ -100,15 +100,14 @@ class ImioAesMeal(BaseResource):
         options = {}
         for k, v in self._dialect_options.items():
             if isinstance(v, six.text_type):
-                v = force_str(v.encode('ascii'))
-            options[force_str(k.encode('ascii'))] = v
+                v = force_str(v.encode("ascii"))
+            options[force_str(k.encode("ascii"))] = v
 
         return options
 
     @dialect_options.setter
     def dialect_options(self, value):
         self._dialect_options = value
-
 
     def get_content_without_bom(self):
         self.meal_file.seek(0)
@@ -135,7 +134,11 @@ class ImioAesMeal(BaseResource):
             currdate = currdate.replace("/" + month + "/", "/01/")
         return currdate.replace("/", "-")
 
-    @endpoint(perm="can_access", methods=["get"], description="True if csv file dates records are for the next month")
+    @endpoint(
+        perm="can_access",
+        methods=["get"],
+        description="True if csv file dates records are for the next month",
+    )
     def are_meals_up_to_date(self, request, **kwargs):
         result = False
         # check only on the first date. Maybe stronger if we check on all records?
@@ -164,7 +167,6 @@ class ImioAesMeal(BaseResource):
 
     def json_and_ignore(self):
         meals = []
-        datas = self.json().get("data")
         for meal in self.datas.get("data"):
             if meal.get("type").upper() not in self.ignore_types.upper():
                 meals.append(meal)
@@ -296,7 +298,6 @@ class ImioAesMeal(BaseResource):
                             )
                     num_col = num_col + 1
                 nothing_already_add = False
-            # self.datas = {'data':meals}
             return {"data": meals}
         except Exception as e:
             raise e
