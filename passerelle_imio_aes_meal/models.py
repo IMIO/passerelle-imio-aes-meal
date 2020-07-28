@@ -212,6 +212,12 @@ class ImioAesMeal(BaseResource):
             # This is the use-case multi-select checkbox per day.
             return 0
 
+    def has_multi_select(self):
+        multi_select = (
+            "mult" if self.multi_select is True and self.nothing is False else ""
+        )
+        return multi_select
+
     @endpoint(perm="can_access", methods=["get"])
     def get(self, request=None, **kwargs):
         self.datas = self.json()
@@ -226,9 +232,6 @@ class ImioAesMeal(BaseResource):
         rows = self.get_rows()
         num_col = 0
         nothing_already_add = False
-        multi_select = (
-            "mult" if self.multi_select is True and self.nothing is False else ""
-        )
         try:
             for r in rows:
                 num_col = 0
@@ -254,7 +257,7 @@ class ImioAesMeal(BaseResource):
                         meals.append(
                             {
                                 "id": "{}_{}_{}".format(
-                                    multi_select, iddate, "exception"
+                                    self.has_multi_select(), iddate, "exception"
                                 ),
                                 "text": "{}".format(r[4]),
                                 "type": "exception",
@@ -265,7 +268,7 @@ class ImioAesMeal(BaseResource):
                             meals.append(
                                 {
                                     "id": "{}_{}_{}".format(
-                                        multi_select, iddate, "potage"
+                                        self.has_multi_select(), iddate, "potage"
                                     ),
                                     "text": "{}".format(r[1]),
                                     "type": "potage",
@@ -275,7 +278,7 @@ class ImioAesMeal(BaseResource):
                             meals.append(
                                 {
                                     "id": "{}_{}_{}".format(
-                                        multi_select, iddate, "repas"
+                                        self.has_multi_select(), iddate, "repas"
                                     ),
                                     "text": "{}".format(r[2]),
                                     "type": "repas",
@@ -285,7 +288,7 @@ class ImioAesMeal(BaseResource):
                             meals.append(
                                 {
                                     "id": "{}_{}_{}".format(
-                                        multi_select, iddate, "fruit"
+                                        self.has_multi_select(), iddate, "fruit"
                                     ),
                                     "text": "{}".format(r[3]),
                                     "type": "fruit",
