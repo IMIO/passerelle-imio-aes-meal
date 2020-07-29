@@ -20,6 +20,7 @@
 import ast
 import csv
 import datetime
+import json
 import six
 import time
 
@@ -303,15 +304,12 @@ class ImioAesMeal(BaseResource):
             raise e
 
     @endpoint(
-        name="Test : Generating menu",
+        name="test",
         perm="can_access",
         methods=["get"],
         description="test : Meals menu is always up to date but it's always the same food."
     )
-    def test(self, request):
-        import datetime
-        import json
-
+    def test_generating_menu(self, request=None):
         result = json.loads(
             json.dumps(
                 [
@@ -321,23 +319,23 @@ class ImioAesMeal(BaseResource):
                         "id": "{}_03-month-year_potage".format(self.has_multi_select()),
                     },
                     {
-                        "text": r"Lasagne bolognaise;pur b\u0153uf ",
+                        "text": "Lasagne bolognaise;pur boeuf ",
                         "type": "repas",
                         "id": "{}_03-month-year_repas".format(self.has_multi_select()),
                     },
                     {"text": "Fruit", "type": "fruit", "id": "_03-month-year_fruit"},
                     {
-                        "text": "Potage chou-fleur",
+                        "text": "Potage chou-fleu",
                         "type": "potage",
                         "id": "{}_04-month-year_potage".format(self.has_multi_select()),
                     },
                     {
-                        "text": r"Couscous poulet;Bouillon de l\u00e9gumes;Semoule",
+                        "text": "Couscous poulet;Bouillon de légumes;Semoule",
                         "type": "repas",
                         "id": "{}_04-month-year_repas".format(self.has_multi_select()),
                     },
                     {
-                        "text": r"Yaourt sucr\u00e9",
+                        "text": "Yaourt sucré",
                         "type": "fruit",
                         "id": "{}_04-month-year_fruit".format(self.has_multi_select()),
                     },
@@ -347,7 +345,7 @@ class ImioAesMeal(BaseResource):
                         "id": "{}_01-month-year_potage".format(self.has_multi_select()),
                     },
                     {
-                        "text": r"Carbonnades de b\u0153uf;Carottes;Frites",
+                        "text": "Carbonnades de boeuf;Carottes;Frites",
                         "type": "repas",
                         "id": "{}_01-month-year_repas".format(self.has_multi_select()),
                     },
@@ -364,12 +362,12 @@ class ImioAesMeal(BaseResource):
                     },
                     {"text": "Biscuit", "type": "fruit", "id": "_05-month-year_fruit"},
                     {
-                        "text": r"Soupe \u00e0 l'oignon",
+                        "text": "Soupe à l'oignon",
                         "type": "potage",
                         "id": "{}_02-month-year_potage".format(self.has_multi_select()),
                     },
                     {
-                        "text": r"Pain de veau sce brune;Compote de pommes;Pur\u00e9e",
+                        "text": "Pain de veau sce brune;Compote de pommes;Purée",
                         "type": "repas",
                         "id": "{}_02-month-year_repas".format(self.has_multi_select()),
                     },
@@ -399,7 +397,7 @@ class ImioAesMeal(BaseResource):
                         "id": "{}_11-month-year_potage".format(self.has_multi_select()),
                     },
                     {
-                        "text": r"Salade de p\u00e2tes mixtes au jambon (dinde);ma\u00efs bio;tomate et petits pois",
+                        "text": "Salade de pâtes mixtes au jambon (dinde);maïs bio;tomate et petits pois",
                         "type": "repas",
                         "id": "{}_11-month-year_repas".format(self.has_multi_select()),
                     },
@@ -410,7 +408,7 @@ class ImioAesMeal(BaseResource):
                         "id": "{}_12-month-year_potage".format(self.has_multi_select()),
                     },
                     {
-                        "text": r"Eminc\u00e9 de dinde, jus aux herbes;Brocoli;Pomme de terre",
+                        "text": "Emincé de dinde, jus aux herbes;Brocoli;Pomme de terre",
                         "type": "repas",
                         "id": "{}_12-month-year_repas".format(self.has_multi_select()),
                     },
@@ -421,7 +419,7 @@ class ImioAesMeal(BaseResource):
                         "id": "{}_08-month-year_potage".format(self.has_multi_select()),
                     },
                     {
-                        "text": r"Pain hamburger pur b\u0153uf;laitue;Frites",
+                        "text": "Pain hamburger pur boeuf;laitue;Frites",
                         "type": "repas",
                         "id": "{}_08-month-year_repas".format(self.has_multi_select()),
                     },
@@ -432,7 +430,7 @@ class ImioAesMeal(BaseResource):
                         "id": "{}_09-month-year_potage".format(self.has_multi_select()),
                     },
                     {
-                        "text": r"Filet de saumon sce citron;Epinards \u00e0 la cr\u00e8me;Pur\u00e9e maison",
+                        "text": "Filet de saumon sce citron;Epinards à la crème;Purée maison",
                         "type": "repas",
                         "id": "{}_09-month-year_repas".format(self.has_multi_select()),
                     },
@@ -443,7 +441,7 @@ class ImioAesMeal(BaseResource):
                         "id": "{}_18-month-year_potage".format(self.has_multi_select()),
                     },
                     {
-                        "text": r"Poisson meuni\u00e8re;Ratatouille ni\u00e7oise;Ebly",
+                        "text": "Poisson meunière;Ratatouille niçoise;Ebly",
                         "type": "repas",
                         "id": "{}_18-month-year_repas".format(self.has_multi_select()),
                     },
@@ -454,7 +452,7 @@ class ImioAesMeal(BaseResource):
                         "id": "{}_17-month-year_potage".format(self.has_multi_select()),
                     },
                     {
-                        "text": r"Eminc\u00e9 de b\u0153uf;Gratin de chou-fleur et de pdt",
+                        "text": "Emincé de boeuf;Gratin de chou-fleur et de pdt",
                         "type": "repas",
                         "id": "{}_17-month-year_repas".format(self.has_multi_select()),
                     },
@@ -465,12 +463,12 @@ class ImioAesMeal(BaseResource):
                         "id": "{}_19-month-year_potage".format(self.has_multi_select()),
                     },
                     {
-                        "text": r"Epigramme d\uyearagneau jus au thym;Flageolets \u00e0 l\uyearail;Pur\u00e9e maison",
+                        "text": "Epigramme d'agneau jus au thym;Flageolets à l'ail;Purée maison",
                         "type": "repas",
                         "id": "{}_19-month-year_repas".format(self.has_multi_select()),
                     },
                     {
-                        "text": r"Cr\u00e8me dessert",
+                        "text": "Crème dessert",
                         "type": "fruit",
                         "id": "{}_19-month-year_fruit".format(self.has_multi_select()),
                     },
@@ -480,7 +478,7 @@ class ImioAesMeal(BaseResource):
                         "id": "{}_15-month-year_potage".format(self.has_multi_select()),
                     },
                     {
-                        "text": r"Omelette;Salade vinaigrette;Frites \u2013 mayonnaise",
+                        "text": "Omelette;Salade vinaigrette;Frites et mayonnaise",
                         "type": "repas",
                         "id": "{}_15-month-year_repas".format(self.has_multi_select()),
                     },
@@ -506,34 +504,34 @@ class ImioAesMeal(BaseResource):
                         "id": "{}_24-month-year_potage".format(self.has_multi_select()),
                     },
                     {
-                        "text": r"Saut\u00e9 de porc aux oignons;Quinoa bio aux petits l\u00e9gumes",
+                        "text": "Sauté de porc aux oignons;Quinoa bio aux petits légumes",
                         "type": "repas",
                         "id": "{}_24-month-year_repas".format(self.has_multi_select()),
                     },
                     {"text": "Fruit", "type": "fruit", "id": "_24-month-year_fruit"},
                     {
-                        "text": r"Potage vrt pr\u00e9",
+                        "text": "Potage vert pré",
                         "type": "potage",
                         "id": "{}_25-month-year_potage".format(self.has_multi_select()),
                     },
                     {
-                        "text": r"Vol-au-vent aux champignons;Pur\u00e9e maison",
+                        "text": "Vol-au-vent aux champignons;Purée maison",
                         "type": "repas",
                         "id": "{}_25-month-year_repas".format(self.has_multi_select()),
                     },
                     {"text": "Biscuit", "type": "fruit", "id": "_25-month-year_fruit"},
                     {
-                        "text": r"Potage C\u00e9leri",
+                        "text": "Potage Céleri",
                         "type": "potage",
                         "id": "{}_26-month-year_potage".format(self.has_multi_select()),
                     },
                     {
-                        "text": r"Oiseau sans t\u00eate;chou-rouge aux pommes;Pomme de terre",
+                        "text": "Oiseau sans tête;chou-rouge aux pommes;Pomme de terre",
                         "type": "repas",
                         "id": "{}_26-month-year_repas".format(self.has_multi_select()),
                     },
                     {
-                        "text": r"Yaourt aromatis\u00e9",
+                        "text": "Yaourt aromatisé",
                         "type": "fruit",
                         "id": "{}_26-month-year_fruit".format(self.has_multi_select()),
                     },
@@ -550,7 +548,7 @@ class ImioAesMeal(BaseResource):
                         "id": "{}_23-month-year_potage".format(self.has_multi_select()),
                     },
                     {
-                        "text": r"Dos de lieu;Courgettes \u00e0 la tomate;P\u00e2tes grecques",
+                        "text": "Dos de lieu;Courgettes à la tomate;Pâtes grecques",
                         "type": "repas",
                         "id": "{}_23-month-year_repas".format(self.has_multi_select()),
                     },
