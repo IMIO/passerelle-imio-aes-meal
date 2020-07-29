@@ -313,7 +313,7 @@ class ImioAesMeal(BaseResource):
         name="test",
         perm="can_access",
         methods=["get"],
-        description="test : Meals menu is always up to date but it's always the same food."
+        description="test : Meals menu is always up to date but it's always the same food.",
     )
     def test_generating_menu(self, request=None):
         result = json.loads(
@@ -329,7 +329,11 @@ class ImioAesMeal(BaseResource):
                         "type": "repas",
                         "id": "{}_03-month-year_repas".format(self.has_multi_select()),
                     },
-                    {"text": "Fruit", "type": "fruit", "id": "_03-month-year_fruit"},
+                    {
+                        "text": "Fruit",
+                        "type": "fruit",
+                        "id": "{}_03-month-year_fruit".format(self.has_multi_select()),
+                    },
                     {
                         "text": "Potage chou-fleu",
                         "type": "potage",
@@ -355,7 +359,11 @@ class ImioAesMeal(BaseResource):
                         "type": "repas",
                         "id": "{}_01-month-year_repas".format(self.has_multi_select()),
                     },
-                    {"text": "Fruit", "type": "fruit", "id": "_01-month-year_fruit"},
+                    {
+                        "text": "Fruit",
+                        "type": "fruit",
+                        "id": "{}_01-month-year_fruit".format(self.has_multi_select()),
+                    },
                     {
                         "text": "Potage champignons",
                         "type": "potage",
@@ -366,7 +374,11 @@ class ImioAesMeal(BaseResource):
                         "type": "repas",
                         "id": "{}_05-month-year_repas".format(self.has_multi_select()),
                     },
-                    {"text": "Biscuit", "type": "fruit", "id": "_05-month-year_fruit"},
+                    {
+                        "text": "Biscuit",
+                        "type": "fruit",
+                        "id": "{}_05-month-year_fruit".format(self.has_multi_select()),
+                    },
                     {
                         "text": "Soupe à l'oignon",
                         "type": "potage",
@@ -418,7 +430,11 @@ class ImioAesMeal(BaseResource):
                         "type": "repas",
                         "id": "{}_12-month-year_repas".format(self.has_multi_select()),
                     },
-                    {"text": "Fruit", "type": "fruit", "id": "_12-month-year_fruit"},
+                    {
+                        "text": "Fruit",
+                        "type": "fruit",
+                        "id": "{}_12-month-year_fruit".format(self.has_multi_select()),
+                    },
                     {
                         "text": "Potage tomate",
                         "type": "potage",
@@ -451,7 +467,11 @@ class ImioAesMeal(BaseResource):
                         "type": "repas",
                         "id": "{}_18-month-year_repas".format(self.has_multi_select()),
                     },
-                    {"text": "Fruit", "type": "fruit", "id": "_18-month-year_fruit"},
+                    {
+                        "text": "Fruit",
+                        "type": "fruit",
+                        "id": "{}_18-month-year_fruit".format(self.has_multi_select()),
+                    },
                     {
                         "text": "Potage potiron",
                         "type": "potage",
@@ -462,7 +482,11 @@ class ImioAesMeal(BaseResource):
                         "type": "repas",
                         "id": "{}_17-month-year_repas".format(self.has_multi_select()),
                     },
-                    {"text": "Biscuit", "type": "fruit", "id": "_17-month-year_fruit"},
+                    {
+                        "text": "Biscuit",
+                        "type": "fruit",
+                        "id": "{}_17-month-year_fruit".format(self.has_multi_select()),
+                    },
                     {
                         "text": "Potage carotte curry",
                         "type": "potage",
@@ -503,7 +527,11 @@ class ImioAesMeal(BaseResource):
                         "type": "repas",
                         "id": "{}_16-month-year_repas".format(self.has_multi_select()),
                     },
-                    {"text": "Fruit", "type": "fruit", "id": "_16-month-year_fruit"},
+                    {
+                        "text": "Fruit",
+                        "type": "fruit",
+                        "id": "{}_16-month-year_fruit".format(self.has_multi_select()),
+                    },
                     {
                         "text": "Potage tomate boulettes",
                         "type": "potage",
@@ -514,7 +542,11 @@ class ImioAesMeal(BaseResource):
                         "type": "repas",
                         "id": "{}_24-month-year_repas".format(self.has_multi_select()),
                     },
-                    {"text": "Fruit", "type": "fruit", "id": "_24-month-year_fruit"},
+                    {
+                        "text": "Fruit",
+                        "type": "fruit",
+                        "id": "{}_24-month-year_fruit".format(self.has_multi_select()),
+                    },
                     {
                         "text": "Potage vert pré",
                         "type": "potage",
@@ -525,7 +557,11 @@ class ImioAesMeal(BaseResource):
                         "type": "repas",
                         "id": "{}_25-month-year_repas".format(self.has_multi_select()),
                     },
-                    {"text": "Biscuit", "type": "fruit", "id": "_25-month-year_fruit"},
+                    {
+                        "text": "Biscuit",
+                        "type": "fruit",
+                        "id": "{}_25-month-year_fruit".format(self.has_multi_select()),
+                    },
                     {
                         "text": "Potage Céleri",
                         "type": "potage",
