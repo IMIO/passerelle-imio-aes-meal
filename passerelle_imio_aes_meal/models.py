@@ -222,12 +222,18 @@ class ImioAesMeal(BaseResource):
         return multi_select
 
     @endpoint(perm="can_access", methods=["get"])
-    def get(self, request=None, **kwargs):
-        self.datas = self.json()
-        if self.personal_labels:
-            self.datas = self.json_add_types_and_labels()
-        if len(self.ignore_types) > 0:
-            self.datas = self.json_and_ignore()
+    def get(self, request=None, test=False):
+        if request.body:
+            params = json.loads(request.body.decode("utf-8"))
+            test = params.get("test")
+        if test is True:
+            self.datas = self.test_generating_menu()
+        else:
+            self.datas = self.json()
+            if self.personal_labels:
+                self.datas = self.json_add_types_and_labels()
+            if len(self.ignore_types) > 0:
+                self.datas = self.json_and_ignore()
         return self.datas
 
     def json(self):
