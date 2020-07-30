@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.1.1e
+------------------
+
+- Manage "nothing" items in test method.
+  [boulch]
+
 0.1.1d
 ------------------
 
