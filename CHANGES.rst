@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.1.1f
+------------------
+- Fix user's choice checking method if prod
+  [nhi]
+
 0.1.1e
 ------------------
 

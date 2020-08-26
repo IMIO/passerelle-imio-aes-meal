@@ -204,10 +204,10 @@ class ImioAesMeal(BaseResource):
         lst_valid_dates = []
         if self.nothing is True:
             # This is the use-case one choice with "nothing" choice per day.
-            all_meals = self.get()["data"]
+            all_meals = self.get_rows()
             for m in all_meals:
-                if m.get("type") != "exception":
-                    meal_date = m.get("id").split("_")[1]
+                if len(m[4]) == 0:
+                    meal_date = m[0]
                     lst_valid_dates.append(meal_date)
             nb_valid_meals = len(set(lst_valid_dates))
             return len(lst_meals) - nb_valid_meals
