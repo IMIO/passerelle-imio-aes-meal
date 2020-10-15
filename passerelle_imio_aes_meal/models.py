@@ -28,6 +28,7 @@ from django.db import models
 from django.utils.encoding import force_str
 from django.utils.translation import ugettext_lazy as _
 from passerelle.base.models import BaseResource
+from passerelle.compat import json_loads
 from passerelle.utils.api import endpoint
 
 
@@ -164,7 +165,7 @@ class ImioAesMeal(BaseResource):
     #    def json_current_month(self, request, **kwargs):
     #        datas = self.json(request).get('data')
     #        datas = json.dumps(datas).replace('month','{:02d}'.format(datetime.date.today().month + 1))
-    #        return json.loads(datas)
+    #        return json_loads(datas)
 
     def json_and_ignore(self):
         meals = []
@@ -224,7 +225,7 @@ class ImioAesMeal(BaseResource):
     @endpoint(perm="can_access", methods=["get"])
     def get(self, request=None, test=False):
         if request.body:
-            params = json.loads(request.body.decode("utf-8"))
+            params = json_loads(request.body)
             test = params.get("test")
         if test is True:
             self.datas = self.test_generating_menu()
@@ -613,7 +614,7 @@ class ImioAesMeal(BaseResource):
                     )
                 current_tmp_date = meal.get("id").split("_")[1]
             lst_meals = lst_meals+ lst_tmp
-        result = json.loads(
+        result = json_loads(
             json.dumps(lst_meals).replace("month", "{:02d}".format(datetime.date.today().month + 1)).replace("year", str(datetime.date.today().year))
         )
         return result
