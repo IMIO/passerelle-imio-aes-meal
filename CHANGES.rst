@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.1.1g
+------------------
+- init buster branch that will become master later and adapt Jenkinsfile
+  to allow the iMio Nexus Debian Buster package build
+  [dmuyshond]
+
+
 0.1.1f
 ------------------
 - Fix user's choice checking method if prod
