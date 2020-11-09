@@ -125,15 +125,20 @@ class ImioAesMeal(BaseResource):
         return rows
 
     def iddate(self, currdate):
-        month = currdate.split("/")[1]
-        year = currdate.split("/")[2]
-        if month != "12":
-            hack_month = "{:02d}".format(datetime.date.today().month + 1)
-            currdate = currdate.replace("/" + month + "/", "/" + hack_month + "/")
-        else:
-            hack_year = "{:02d}".format(datetime.date.today().year + 1)
-            currdate = currdate.replace(year, hack_year)
-            currdate = currdate.replace("/" + month + "/", "/01/")
+        # All those lines a commented for history
+        # I don't know why they exist, possibly for Tournai's usecases.
+        # But now, they mess up Chaudfontaine.
+        # Since the dates are already in the CSV, I don't see the utility of recalculating those dates
+
+        #month = currdate.split("/")[1]
+        #year = currdate.split("/")[2]
+        #if month != "12":
+        #    hack_month = "{:02d}".format(datetime.date.today().month + 1)
+        #    currdate = currdate.replace("/" + month + "/", "/" + hack_month + "/")
+        #else:
+        #    hack_year = "{:02d}".format(datetime.date.today().year + 1)
+        #    currdate = currdate.replace(year, hack_year)
+        #    currdate = currdate.replace("/" + month + "/", "/01/")
         return currdate.replace("/", "-")
 
     @endpoint(
