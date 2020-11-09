@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.1.1h
+------------------
+- Do not recalculate meal's date before returning the json as they are correct
+  in the imported csv file.
+  [nhislaire]
+
+
 0.1.1g
 ------------------
 - init buster branch that will become master later and adapt Jenkinsfile
