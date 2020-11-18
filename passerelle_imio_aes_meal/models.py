@@ -95,8 +95,8 @@ class ImioAesMeal(BaseResource):
         if file_type in ("ods", "xls", "xlsx"):
             return None
         # Set dialect_options if None
-        # if self._dialect_options is None:
-        self._detect_dialect_options()
+        if self._dialect_options is None:
+            self._detect_dialect_options()
         self.save(cache=False)
 
         options = {}
@@ -120,6 +120,8 @@ class ImioAesMeal(BaseResource):
         file_type = self.meal_file.name.split(".")[-1]
         if file_type == "csv":
             content = self.get_content_without_bom()
+            self.dialect_options = {'doublequote': False, 'quoting': 0, 'lineterminator': '\r\n',
+                                    'skipinitialspace': False, 'quotechar': '"', 'delimiter': '|'}
             reader = csv.reader(content.splitlines(), **self.dialect_options)
             rows = list(reader)
         return rows
