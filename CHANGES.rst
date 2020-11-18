@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.1.1i
+------------------
+- Hardcode dialect_options value as it should not changes
+  [nhislaire]
+
+
 0.1.1h
 ------------------
 - Do not recalculate meal's date before returning the json as they are correct
