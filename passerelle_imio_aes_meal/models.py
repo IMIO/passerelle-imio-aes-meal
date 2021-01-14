@@ -225,15 +225,19 @@ class ImioAesMeal(BaseResource):
         :param meal: str
         :return: dict
         """
-        # to do : add "mult" to choice
-        # should be parameterizable
-        result = {"id": "_{}_{}".format(day.replace("/", "-"), meal_category),
+        # create the id
+        item_id = "{}_{}_{}".format(
+            "mult" if self.multi_select is True and self.nothing is False else "",
+            day.replace("/", "-"),
+            meal_category)
+        # create the whole item
+        result = {"id": item_id,
                   "text": meal,
                   "type": meal_category,
                   }
+        # return item
         return result
 
-    # main script, creating ready-to-use json
     def jsonifier(self, csvfile):
         """Transform data from a csv file to use them as a publik's datasource.
 
@@ -247,7 +251,6 @@ class ImioAesMeal(BaseResource):
             # Add a nothing item
             if self.nothing:
                 jsonified_menu.append(self.set_choice(day_menu[0], meal_kind[0], 'Rien'))
-
             # Add other items
             i = 1
             while i < len(day_menu):

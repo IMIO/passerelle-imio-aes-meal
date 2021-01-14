@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.1.1l
+------------------
+- manage multi-select choice
+  [nhislaire]
+
+
 0.1.1k
 ------------------
 - Add docstrings
