@@ -230,10 +230,23 @@ class ImioAesMeal(BaseResource):
 
     # open and read the file, then listing its content
     def get_data_from_csv(self, menu_file):
+        """Transform CSV reader into a list of lists
+
+        :param menu_file: str
+        :return: list
+        """
         month_menu = [day_menu.split('|') for day_menu in menu_file.split('\r\n') if len(day_menu) > 1]
         return month_menu
 
     def set_choice(self, day, meal_category, meal):
+        """Set a new choice with a date, meal category and the meal itself
+
+        :param day: str
+        date as DD/MM/YYYY
+        :param meal_category: str
+        :param meal: str
+        :return: dict
+        """
         # to do : add "mult" to choice
         # should be parameterizable
         result = {"id": "_{}_{}".format(day.replace("/", "-"), meal_category),
