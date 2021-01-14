@@ -33,7 +33,6 @@ from passerelle.utils.api import endpoint
 
 
 class ImioAesMeal(BaseResource):
-
     category = _("Datasources manager")
     meal_file = models.FileField(
         _("AES Meal file"),
@@ -132,12 +131,12 @@ class ImioAesMeal(BaseResource):
         # But now, they mess up Chaudfontaine.
         # Since the dates are already in the CSV, I don't see the utility of recalculating those dates
 
-        #month = currdate.split("/")[1]
-        #year = currdate.split("/")[2]
-        #if month != "12":
+        # month = currdate.split("/")[1]
+        # year = currdate.split("/")[2]
+        # if month != "12":
         #    hack_month = "{:02d}".format(datetime.date.today().month + 1)
         #    currdate = currdate.replace("/" + month + "/", "/" + hack_month + "/")
-        #else:
+        # else:
         #    hack_year = "{:02d}".format(datetime.date.today().year + 1)
         #    currdate = currdate.replace(year, hack_year)
         #    currdate = currdate.replace("/" + month + "/", "/01/")
@@ -229,93 +228,60 @@ class ImioAesMeal(BaseResource):
         )
         return multi_select
 
-    @endpoint(perm="can_access", methods=["get"])
-    def get(self, request=None, test=False):
-        if request.body:
-            params = json_loads(request.body)
-            test = params.get("test")
-        if test is True:
-            self.datas = self.test_generating_menu()
-        else:
-            self.datas = self.json()
-            if self.personal_labels:
-                self.datas = self.json_add_types_and_labels()
-            if len(self.ignore_types) > 0:
-                self.datas = self.json_and_ignore()
-        return self.datas
+    # open and read the file, then listing its content
+    def get_data_from_csv(self, menu_file):
+        """Transform CSV reader into a list of lists
 
-    def json(self):
-        meals = []
-        rows = self.get_rows()
-        num_col = 0
-        nothing_already_add = False
-        try:
-            for r in rows:
-                num_col = 0
-                for col in r:
-                    iddate = self.iddate(r[0])
-                    is_day_off = False if len(r[4]) == 0 else True
-                    if (
-                        self.nothing is True
-                        and nothing_already_add is False
-                        and is_day_off is False
-                    ):
-                        # add a "nothing" choice checkbox.
-                        meals.append(
-                            {
-                                "id": "_{}_{}".format(iddate, "nothing"),
-                                "text": "Rien",
-                                "type": "nothing",
-                            }
-                        )
-                        nothing_already_add = True
-                    if num_col == 4 and is_day_off is True:
-                        # It's a day off!
-                        meals.append(
-                            {
-                                "id": "{}_{}_{}".format(
-                                    self.has_multi_select(), iddate, "exception"
-                                ),
-                                "text": "{}".format(r[4]),
-                                "type": "exception",
-                            }
-                        )
-                    elif len(r[4]) == 0:
-                        if num_col == 1:
-                            meals.append(
-                                {
-                                    "id": "{}_{}_{}".format(
-                                        self.has_multi_select(), iddate, "potage"
-                                    ),
-                                    "text": "{}".format(r[1]),
-                                    "type": "potage",
-                                }
-                            )
-                        if num_col == 2:
-                            meals.append(
-                                {
-                                    "id": "{}_{}_{}".format(
-                                        self.has_multi_select(), iddate, "repas"
-                                    ),
-                                    "text": "{}".format(r[2]),
-                                    "type": "repas",
-                                }
-                            )
-                        if num_col == 3:
-                            meals.append(
-                                {
-                                    "id": "{}_{}_{}".format(
-                                        self.has_multi_select(), iddate, "fruit"
-                                    ),
-                                    "text": "{}".format(r[3]),
-                                    "type": "fruit",
-                                }
-                            )
-                    num_col = num_col + 1
-                nothing_already_add = False
-            return {"data": meals}
-        except Exception as e:
-            raise e
+        :param menu_file: str
+        :return: list
+        """
+        month_menu = [day_menu.split('|') for day_menu in menu_file.split('\r\n') if len(day_menu) > 1]
+        return month_menu
+
+    def set_choice(self, day, meal_category, meal):
+        """Set a new choice with a date, meal category and the meal itself
+
+        :param day: str
+        date as DD/MM/YYYY
+        :param meal_category: str
+        :param meal: str
+        :return: dict
+        """
+        # to do : add "mult" to choice
+        # should be parameterizable
+        result = {"id": "_{}_{}".format(day.replace("/", "-"), meal_category),
+                  "text": meal,
+                  "type": meal_category,
+                  }
+        return result
+
+    # main script, creating ready-to-use json
+    def jsonifier(self, csvfile):
+        """Transform data from a csv file to use them as a publik's datasource.
+
+        :param csvfile: a csv file formatted like this :
+        date as DD/MM/YYYY|soup|meal|fruit|exception (holiday)
+        :return: Publik-like json with menu
+        """
+        jsonified_menu = []
+        meal_kind = ("nothing", "potage", "repas", "fruit", "exception")
+        for day_menu in self.get_data_from_csv(csvfile):
+            # Add a nothing item
+            if self.nothing:
+                jsonified_menu.append(self.set_choice(day_menu[0], meal_kind[0], 'Rien'))
+
+            # Add other items
+            i = 1
+            while i < len(day_menu):
+                if len(day_menu[i]) > 0 and meal_kind[i] != "exception":
+                    jsonified_menu.append(self.set_choice(day_menu[0], meal_kind[i], day_menu[i]))
+                i += 1
+        return {"data": jsonified_menu}
+
+    @endpoint(perm="can_access", methods=["get"])
+    def get(self, request=None, test=None):
+        self.datas = self.jsonifier(self.get_content_without_bom())
+        return self.datas
 
     @endpoint(
         name="test",
@@ -325,287 +291,287 @@ class ImioAesMeal(BaseResource):
     )
     def test_generating_menu(self, request=None):
         lst_meals = [
-                            {
-                                "text": "Potage cresson",
-                                "type": "potage",
-                                "id": "{}_03-month-year_potage".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Lasagne bolognaise;pur boeuf ",
-                                "type": "repas",
-                                "id": "{}_03-month-year_repas".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Fruit",
-                                "type": "fruit",
-                                "id": "{}_03-month-year_fruit".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Potage chou-fleu",
-                                "type": "potage",
-                                "id": "{}_04-month-year_potage".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Couscous poulet;Bouillon de légumes;Semoule",
-                                "type": "repas",
-                                "id": "{}_04-month-year_repas".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Yaourt sucré",
-                                "type": "fruit",
-                                "id": "{}_04-month-year_fruit".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Potage cerfeuil",
-                                "type": "potage",
-                                "id": "{}_01-month-year_potage".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Carbonnades de boeuf;Carottes;Frites",
-                                "type": "repas",
-                                "id": "{}_01-month-year_repas".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Fruit",
-                                "type": "fruit",
-                                "id": "{}_01-month-year_fruit".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Potage champignons",
-                                "type": "potage",
-                                "id": "{}_05-month-year_potage".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Filet de sole;Haricots verts ",
-                                "type": "repas",
-                                "id": "{}_05-month-year_repas".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Biscuit",
-                                "type": "fruit",
-                                "id": "{}_05-month-year_fruit".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Soupe à l'oignon",
-                                "type": "potage",
-                                "id": "{}_02-month-year_potage".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Pain de veau sce brune;Compote de pommes;Purée",
-                                "type": "repas",
-                                "id": "{}_02-month-year_repas".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Mimolette",
-                                "type": "fruit",
-                                "id": "{}_02-month-year_fruit".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Potage julienne",
-                                "type": "potage",
-                                "id": "{}_10-month-year_potage".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Pilaf aigre doux;(RIZ, lentilles);Salade",
-                                "type": "repas",
-                                "id": "{}_10-month-year_repas".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Yaourt nature bio & sucrette",
-                                "type": "fruit",
-                                "id": "{}_10-month-year_fruit".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Potage carotte curry",
-                                "type": "potage",
-                                "id": "{}_11-month-year_potage".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Salade de pâtes mixtes au jambon (dinde);maïs bio;tomate et petits pois",
-                                "type": "repas",
-                                "id": "{}_11-month-year_repas".format(self.has_multi_select()),
-                            },
-                            {"text": "Fruit", "type": "fruit", "id": "_11-month-year_fruit"},
-                            {
-                                "text": "Potage courgette",
-                                "type": "potage",
-                                "id": "{}_12-month-year_potage".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Emincé de dinde, jus aux herbes;Brocoli;Pomme de terre",
-                                "type": "repas",
-                                "id": "{}_12-month-year_repas".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Fruit",
-                                "type": "fruit",
-                                "id": "{}_12-month-year_fruit".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Potage tomate",
-                                "type": "potage",
-                                "id": "{}_08-month-year_potage".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Pain hamburger pur boeuf;laitue;Frites",
-                                "type": "repas",
-                                "id": "{}_08-month-year_repas".format(self.has_multi_select()),
-                            },
-                            {"text": "Pop corn", "type": "fruit", "id": "_08-month-year_fruit"},
-                            {
-                                "text": "Potage navet",
-                                "type": "potage",
-                                "id": "{}_09-month-year_potage".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Filet de saumon sce citron;Epinards à la crème;Purée maison",
-                                "type": "repas",
-                                "id": "{}_09-month-year_repas".format(self.has_multi_select()),
-                            },
-                            {"text": "Fruit", "type": "fruit", "id": "_09-month-year_fruit"},
-                            {
-                                "text": "Potage poireau",
-                                "type": "potage",
-                                "id": "{}_18-month-year_potage".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Poisson meunière;Ratatouille niçoise;Ebly",
-                                "type": "repas",
-                                "id": "{}_18-month-year_repas".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Fruit",
-                                "type": "fruit",
-                                "id": "{}_18-month-year_fruit".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Potage potiron",
-                                "type": "potage",
-                                "id": "{}_17-month-year_potage".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Emincé de boeuf;Gratin de chou-fleur et de pdt",
-                                "type": "repas",
-                                "id": "{}_17-month-year_repas".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Biscuit",
-                                "type": "fruit",
-                                "id": "{}_17-month-year_fruit".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Potage carotte curry",
-                                "type": "potage",
-                                "id": "{}_19-month-year_potage".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Epigramme d'agneau jus au thym;Flageolets à l'ail;Purée maison",
-                                "type": "repas",
-                                "id": "{}_19-month-year_repas".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Crème dessert",
-                                "type": "fruit",
-                                "id": "{}_19-month-year_fruit".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Minestrone",
-                                "type": "potage",
-                                "id": "{}_15-month-year_potage".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Omelette;Salade vinaigrette;Frites et mayonnaise",
-                                "type": "repas",
-                                "id": "{}_15-month-year_repas".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Yaourt aux fruits",
-                                "type": "fruit",
-                                "id": "{}_15-month-year_fruit".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Potage haricots verts",
-                                "type": "potage",
-                                "id": "{}_16-month-year_potage".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Macaroni;carbonara de dinde aux blancs de poireaux",
-                                "type": "repas",
-                                "id": "{}_16-month-year_repas".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Fruit",
-                                "type": "fruit",
-                                "id": "{}_16-month-year_fruit".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Potage tomate boulettes",
-                                "type": "potage",
-                                "id": "{}_24-month-year_potage".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Sauté de porc aux oignons;Quinoa bio aux petits légumes",
-                                "type": "repas",
-                                "id": "{}_24-month-year_repas".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Fruit",
-                                "type": "fruit",
-                                "id": "{}_24-month-year_fruit".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Potage vert pré",
-                                "type": "potage",
-                                "id": "{}_25-month-year_potage".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Vol-au-vent aux champignons;Purée maison",
-                                "type": "repas",
-                                "id": "{}_25-month-year_repas".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Biscuit",
-                                "type": "fruit",
-                                "id": "{}_25-month-year_fruit".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Potage Céleri",
-                                "type": "potage",
-                                "id": "{}_26-month-year_potage".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Oiseau sans tête;chou-rouge aux pommes;Pomme de terre",
-                                "type": "repas",
-                                "id": "{}_26-month-year_repas".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Yaourt aromatisé",
-                                "type": "fruit",
-                                "id": "{}_26-month-year_fruit".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "CONGE EXCEPTIONNELLE",
-                                "type": "exception",
-                                "id": "{}_22-month-year_exception".format(
-                                    self.has_multi_select()
-                                ),
-                            },
-                            {
-                                "text": "Potage brocoli",
-                                "type": "potage",
-                                "id": "{}_23-month-year_potage".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Dos de lieu;Courgettes à la tomate;Pâtes grecques",
-                                "type": "repas",
-                                "id": "{}_23-month-year_repas".format(self.has_multi_select()),
-                            },
-                            {
-                                "text": "Fruit",
-                                "type": "fruit",
-                                "id": "{}_23-month-year_fruit".format(self.has_multi_select()),
-                            },
-                        ]
+            {
+                "text": "Potage cresson",
+                "type": "potage",
+                "id": "{}_03-month-year_potage".format(self.has_multi_select()),
+            },
+            {
+                "text": "Lasagne bolognaise;pur boeuf ",
+                "type": "repas",
+                "id": "{}_03-month-year_repas".format(self.has_multi_select()),
+            },
+            {
+                "text": "Fruit",
+                "type": "fruit",
+                "id": "{}_03-month-year_fruit".format(self.has_multi_select()),
+            },
+            {
+                "text": "Potage chou-fleu",
+                "type": "potage",
+                "id": "{}_04-month-year_potage".format(self.has_multi_select()),
+            },
+            {
+                "text": "Couscous poulet;Bouillon de légumes;Semoule",
+                "type": "repas",
+                "id": "{}_04-month-year_repas".format(self.has_multi_select()),
+            },
+            {
+                "text": "Yaourt sucré",
+                "type": "fruit",
+                "id": "{}_04-month-year_fruit".format(self.has_multi_select()),
+            },
+            {
+                "text": "Potage cerfeuil",
+                "type": "potage",
+                "id": "{}_01-month-year_potage".format(self.has_multi_select()),
+            },
+            {
+                "text": "Carbonnades de boeuf;Carottes;Frites",
+                "type": "repas",
+                "id": "{}_01-month-year_repas".format(self.has_multi_select()),
+            },
+            {
+                "text": "Fruit",
+                "type": "fruit",
+                "id": "{}_01-month-year_fruit".format(self.has_multi_select()),
+            },
+            {
+                "text": "Potage champignons",
+                "type": "potage",
+                "id": "{}_05-month-year_potage".format(self.has_multi_select()),
+            },
+            {
+                "text": "Filet de sole;Haricots verts ",
+                "type": "repas",
+                "id": "{}_05-month-year_repas".format(self.has_multi_select()),
+            },
+            {
+                "text": "Biscuit",
+                "type": "fruit",
+                "id": "{}_05-month-year_fruit".format(self.has_multi_select()),
+            },
+            {
+                "text": "Soupe à l'oignon",
+                "type": "potage",
+                "id": "{}_02-month-year_potage".format(self.has_multi_select()),
+            },
+            {
+                "text": "Pain de veau sce brune;Compote de pommes;Purée",
+                "type": "repas",
+                "id": "{}_02-month-year_repas".format(self.has_multi_select()),
+            },
+            {
+                "text": "Mimolette",
+                "type": "fruit",
+                "id": "{}_02-month-year_fruit".format(self.has_multi_select()),
+            },
+            {
+                "text": "Potage julienne",
+                "type": "potage",
+                "id": "{}_10-month-year_potage".format(self.has_multi_select()),
+            },
+            {
+                "text": "Pilaf aigre doux;(RIZ, lentilles);Salade",
+                "type": "repas",
+                "id": "{}_10-month-year_repas".format(self.has_multi_select()),
+            },
+            {
+                "text": "Yaourt nature bio & sucrette",
+                "type": "fruit",
+                "id": "{}_10-month-year_fruit".format(self.has_multi_select()),
+            },
+            {
+                "text": "Potage carotte curry",
+                "type": "potage",
+                "id": "{}_11-month-year_potage".format(self.has_multi_select()),
+            },
+            {
+                "text": "Salade de pâtes mixtes au jambon (dinde);maïs bio;tomate et petits pois",
+                "type": "repas",
+                "id": "{}_11-month-year_repas".format(self.has_multi_select()),
+            },
+            {"text": "Fruit", "type": "fruit", "id": "_11-month-year_fruit"},
+            {
+                "text": "Potage courgette",
+                "type": "potage",
+                "id": "{}_12-month-year_potage".format(self.has_multi_select()),
+            },
+            {
+                "text": "Emincé de dinde, jus aux herbes;Brocoli;Pomme de terre",
+                "type": "repas",
+                "id": "{}_12-month-year_repas".format(self.has_multi_select()),
+            },
+            {
+                "text": "Fruit",
+                "type": "fruit",
+                "id": "{}_12-month-year_fruit".format(self.has_multi_select()),
+            },
+            {
+                "text": "Potage tomate",
+                "type": "potage",
+                "id": "{}_08-month-year_potage".format(self.has_multi_select()),
+            },
+            {
+                "text": "Pain hamburger pur boeuf;laitue;Frites",
+                "type": "repas",
+                "id": "{}_08-month-year_repas".format(self.has_multi_select()),
+            },
+            {"text": "Pop corn", "type": "fruit", "id": "_08-month-year_fruit"},
+            {
+                "text": "Potage navet",
+                "type": "potage",
+                "id": "{}_09-month-year_potage".format(self.has_multi_select()),
+            },
+            {
+                "text": "Filet de saumon sce citron;Epinards à la crème;Purée maison",
+                "type": "repas",
+                "id": "{}_09-month-year_repas".format(self.has_multi_select()),
+            },
+            {"text": "Fruit", "type": "fruit", "id": "_09-month-year_fruit"},
+            {
+                "text": "Potage poireau",
+                "type": "potage",
+                "id": "{}_18-month-year_potage".format(self.has_multi_select()),
+            },
+            {
+                "text": "Poisson meunière;Ratatouille niçoise;Ebly",
+                "type": "repas",
+                "id": "{}_18-month-year_repas".format(self.has_multi_select()),
+            },
+            {
+                "text": "Fruit",
+                "type": "fruit",
+                "id": "{}_18-month-year_fruit".format(self.has_multi_select()),
+            },
+            {
+                "text": "Potage potiron",
+                "type": "potage",
+                "id": "{}_17-month-year_potage".format(self.has_multi_select()),
+            },
+            {
+                "text": "Emincé de boeuf;Gratin de chou-fleur et de pdt",
+                "type": "repas",
+                "id": "{}_17-month-year_repas".format(self.has_multi_select()),
+            },
+            {
+                "text": "Biscuit",
+                "type": "fruit",
+                "id": "{}_17-month-year_fruit".format(self.has_multi_select()),
+            },
+            {
+                "text": "Potage carotte curry",
+                "type": "potage",
+                "id": "{}_19-month-year_potage".format(self.has_multi_select()),
+            },
+            {
+                "text": "Epigramme d'agneau jus au thym;Flageolets à l'ail;Purée maison",
+                "type": "repas",
+                "id": "{}_19-month-year_repas".format(self.has_multi_select()),
+            },
+            {
+                "text": "Crème dessert",
+                "type": "fruit",
+                "id": "{}_19-month-year_fruit".format(self.has_multi_select()),
+            },
+            {
+                "text": "Minestrone",
+                "type": "potage",
+                "id": "{}_15-month-year_potage".format(self.has_multi_select()),
+            },
+            {
+                "text": "Omelette;Salade vinaigrette;Frites et mayonnaise",
+                "type": "repas",
+                "id": "{}_15-month-year_repas".format(self.has_multi_select()),
+            },
+            {
+                "text": "Yaourt aux fruits",
+                "type": "fruit",
+                "id": "{}_15-month-year_fruit".format(self.has_multi_select()),
+            },
+            {
+                "text": "Potage haricots verts",
+                "type": "potage",
+                "id": "{}_16-month-year_potage".format(self.has_multi_select()),
+            },
+            {
+                "text": "Macaroni;carbonara de dinde aux blancs de poireaux",
+                "type": "repas",
+                "id": "{}_16-month-year_repas".format(self.has_multi_select()),
+            },
+            {
+                "text": "Fruit",
+                "type": "fruit",
+                "id": "{}_16-month-year_fruit".format(self.has_multi_select()),
+            },
+            {
+                "text": "Potage tomate boulettes",
+                "type": "potage",
+                "id": "{}_24-month-year_potage".format(self.has_multi_select()),
+            },
+            {
+                "text": "Sauté de porc aux oignons;Quinoa bio aux petits légumes",
+                "type": "repas",
+                "id": "{}_24-month-year_repas".format(self.has_multi_select()),
+            },
+            {
+                "text": "Fruit",
+                "type": "fruit",
+                "id": "{}_24-month-year_fruit".format(self.has_multi_select()),
+            },
+            {
+                "text": "Potage vert pré",
+                "type": "potage",
+                "id": "{}_25-month-year_potage".format(self.has_multi_select()),
+            },
+            {
+                "text": "Vol-au-vent aux champignons;Purée maison",
+                "type": "repas",
+                "id": "{}_25-month-year_repas".format(self.has_multi_select()),
+            },
+            {
+                "text": "Biscuit",
+                "type": "fruit",
+                "id": "{}_25-month-year_fruit".format(self.has_multi_select()),
+            },
+            {
+                "text": "Potage Céleri",
+                "type": "potage",
+                "id": "{}_26-month-year_potage".format(self.has_multi_select()),
+            },
+            {
+                "text": "Oiseau sans tête;chou-rouge aux pommes;Pomme de terre",
+                "type": "repas",
+                "id": "{}_26-month-year_repas".format(self.has_multi_select()),
+            },
+            {
+                "text": "Yaourt aromatisé",
+                "type": "fruit",
+                "id": "{}_26-month-year_fruit".format(self.has_multi_select()),
+            },
+            {
+                "text": "CONGE EXCEPTIONNELLE",
+                "type": "exception",
+                "id": "{}_22-month-year_exception".format(
+                    self.has_multi_select()
+                ),
+            },
+            {
+                "text": "Potage brocoli",
+                "type": "potage",
+                "id": "{}_23-month-year_potage".format(self.has_multi_select()),
+            },
+            {
+                "text": "Dos de lieu;Courgettes à la tomate;Pâtes grecques",
+                "type": "repas",
+                "id": "{}_23-month-year_repas".format(self.has_multi_select()),
+            },
+            {
+                "text": "Fruit",
+                "type": "fruit",
+                "id": "{}_23-month-year_fruit".format(self.has_multi_select()),
+            },
+        ]
         if self.nothing is True:
             current_tmp_date = ""
             lst_tmp = []
@@ -620,8 +586,10 @@ class ImioAesMeal(BaseResource):
                         }
                     )
                 current_tmp_date = meal.get("id").split("_")[1]
-            lst_meals = lst_meals+ lst_tmp
+            lst_meals = lst_meals + lst_tmp
         result = json_loads(
-            json.dumps(lst_meals).replace("month", "{:02d}".format(datetime.date.today().month + 1)).replace("year", str(datetime.date.today().year))
+            json.dumps(lst_meals).replace("month", "{:02d}".format(datetime.date.today().month + 1)).replace("year",
+                                                                                                             str(
+                                                                                                                 datetime.date.today().year))
         )
         return result

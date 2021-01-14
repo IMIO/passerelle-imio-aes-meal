@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.1.1j
+------------------
+- Refactor and simplify get method and submethods
+- Add docstrings to refactored methods
+  [nhislaire]
+
+
 0.1.1i
 ------------------
 - Hardcode dialect_options value as it should not changes
