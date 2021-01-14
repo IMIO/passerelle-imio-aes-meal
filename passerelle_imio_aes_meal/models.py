@@ -88,7 +88,7 @@ class ImioAesMeal(BaseResource):
 
     @property
     def dialect_options(self):
-        """turn dict items into string
+        """Turn dict items into string
         """
         file_type = self.meal_file.name.split(".")[-1]
         if file_type in ("ods", "xls", "xlsx"):
@@ -111,11 +111,19 @@ class ImioAesMeal(BaseResource):
         self._dialect_options = value
 
     def get_content_without_bom(self):
+        """Return the content of the csv as a string
+
+        :return: str
+        """
         self.meal_file.seek(0)
         content = self.meal_file.read()
         return force_str(content.decode("utf-8-sig", "ignore").encode("utf-8"))
 
     def get_rows(self):
+        """Return rows, a list of each row from the csvfile
+
+        :return: list
+        """
         file_type = self.meal_file.name.split(".")[-1]
         if file_type == "csv":
             content = self.get_content_without_bom()
@@ -125,29 +133,18 @@ class ImioAesMeal(BaseResource):
             rows = list(reader)
         return rows
 
-    def iddate(self, currdate):
-        # All those lines a commented for history
-        # I don't know why they exist, possibly for Tournai's usecases.
-        # But now, they mess up Chaudfontaine.
-        # Since the dates are already in the CSV, I don't see the utility of recalculating those dates
-
-        # month = currdate.split("/")[1]
-        # year = currdate.split("/")[2]
-        # if month != "12":
-        #    hack_month = "{:02d}".format(datetime.date.today().month + 1)
-        #    currdate = currdate.replace("/" + month + "/", "/" + hack_month + "/")
-        # else:
-        #    hack_year = "{:02d}".format(datetime.date.today().year + 1)
-        #    currdate = currdate.replace(year, hack_year)
-        #    currdate = currdate.replace("/" + month + "/", "/01/")
-        return currdate.replace("/", "-")
-
     @endpoint(
         perm="can_access",
         methods=["get"],
         description="Retourne Vrai si les dates du CSV sont bien pour le mois prochain",
     )
     def are_meals_up_to_date(self, request, **kwargs):
+        """Return True if meals are up to date
+
+        :param request: Any
+        :param kwargs: Dict[str, Any]
+        :return: bool
+        """
         result = False
         # check only on the first date. Maybe stronger if we check on all records?
         first_date_record = self.get_rows()[0][0]
@@ -167,34 +164,6 @@ class ImioAesMeal(BaseResource):
                 result = True
         return result
 
-    #    @endpoint(perm='can_access', methods=['get'])
-    #    def json_current_month(self, request, **kwargs):
-    #        datas = self.json(request).get('data')
-    #        datas = json.dumps(datas).replace('month','{:02d}'.format(datetime.date.today().month + 1))
-    #        return json_loads(datas)
-
-    def json_and_ignore(self):
-        meals = []
-        for meal in self.datas.get("data"):
-            if meal.get("type").upper() not in self.ignore_types.upper():
-                meals.append(meal)
-        self.datas["data"] = meals
-        return self.datas
-
-    # {"potage":"Potage - tartine",
-    #       "repas":"Repas chaud"}
-    def json_add_types_and_labels(self):
-        pl = ast.literal_eval(self.personal_labels)
-        meals = []
-        for meal in self.datas.get("data"):
-            if meal.get("type") in pl:
-                meal["text"] = "[{}];{}".format(
-                    pl.get(meal.get("type")), meal.get("text")
-                )
-            meals.append(meal)
-        self.datas["data"] = meals
-        return self.datas
-
     @endpoint(
         serializer_type="json-api",
         perm="can_access",
@@ -211,10 +180,10 @@ class ImioAesMeal(BaseResource):
         """Return 0 if at least a meal is selected for each day
         if nothing mode is set up
 
-        :param request:
-        :param kwargs: list of str
+        :param request: request's parameters
+        :param kwargs: Dict[str, Any]
         IDs of selected meals
-        :return:
+        :return: int
         """
         lst_meals = request.GET["lst_meals"].split(",")
         lst_valid_dates = []
@@ -294,6 +263,13 @@ class ImioAesMeal(BaseResource):
         description="Renvoie le menu CSV sous un format JSON utilisable dans une liste"
     )
     def get(self, request=None, test=None):
+        """
+
+        :param request: request's parameters
+        :param test: Any
+        Useless - but needed because of the wscall configured in WCS
+        :return:
+        """
         self.datas = self.jsonifier(self.get_content_without_bom())
         return self.datas
 
@@ -304,6 +280,12 @@ class ImioAesMeal(BaseResource):
         description="test : Meals menu is always up to date but it's always the same food.",
     )
     def test_generating_menu(self, request=None):
+        """
+
+        :param request: request's parameters
+        :return: Dict
+        Menu as JSON
+        """
         lst_meals = [
             {
                 "text": "Potage cresson",
