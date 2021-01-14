@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.1.1k
+------------------
+- Add docstrings
+- Add descriptions to endpoints, or translate them to french
+  [nhislaire]
+
+
 0.1.1j
 ------------------
 - Refactor and simplify get method and submethods
