@@ -145,7 +145,7 @@ class ImioAesMeal(BaseResource):
     @endpoint(
         perm="can_access",
         methods=["get"],
-        description="True if csv file dates records are for the next month",
+        description="Retourne Vrai si les dates du CSV sont bien pour le mois prochain",
     )
     def are_meals_up_to_date(self, request, **kwargs):
         result = False
@@ -198,7 +198,8 @@ class ImioAesMeal(BaseResource):
     @endpoint(
         serializer_type="json-api",
         perm="can_access",
-        description="Ensure than citizen selected at least one item per day when nothing mode is set up",
+        description="Retourne 0 si l'usager a choisi au moins un repas par jour, quand il dispose de la case à cocher "
+                    "\"Rien\"",
         parameters={
             "lst_meals": {
                 "description": "list of selected meals",
@@ -207,6 +208,14 @@ class ImioAesMeal(BaseResource):
         },
     )
     def zero_if_meals_selected_for_each_day(self, request=None, **kwargs):
+        """Return 0 if at least a meal is selected for each day
+        if nothing mode is set up
+
+        :param request:
+        :param kwargs: list of str
+        IDs of selected meals
+        :return:
+        """
         lst_meals = request.GET["lst_meals"].split(",")
         lst_valid_dates = []
         if self.nothing is True:
@@ -278,7 +287,12 @@ class ImioAesMeal(BaseResource):
                 i += 1
         return {"data": jsonified_menu}
 
-    @endpoint(perm="can_access", methods=["get"])
+    @endpoint(
+        name="get",
+        perm="can_access",
+        methods=["get"],
+        description="Renvoie le menu CSV sous un format JSON utilisable dans une liste"
+    )
     def get(self, request=None, test=None):
         self.datas = self.jsonifier(self.get_content_without_bom())
         return self.datas
