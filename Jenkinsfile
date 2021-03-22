@@ -16,7 +16,10 @@ pipeline {
                 }
             }
         }
-        stage('Deploy') {
+        stage('Push deb to buster apt repo') {
+            when {
+                branch 'master'
+            }
             environment {
                 VERSION= sh (script: "sh version.sh", returnStdout: true)
             }
@@ -26,11 +29,25 @@ pipeline {
                 }
             }
         }
+        stage('Push deb to buster-test apt repo') {
+            when {
+                not {
+                    branch 'master'
+                }
+            }
+            environment {
+                VERSION= sh (script: "sh version.sh", returnStdout: true)
+            }
+            steps {
+                withCredentials([usernameColonPassword(credentialsId: 'nexus-teleservices', variable: 'CREDENTIALS'),string(credentialsId: 'nexus-url-buster-test', variable:'NEXUS_URL_BUSTER')]) {
+                    sh ('curl -v --fail -u $CREDENTIALS -X POST -H Content-Type:multipart/form-data --data-binary @passerelle-imio-aes-meal_`echo ${VERSION}`_amd64.deb $NEXUS_URL_BUSTER')
+                }
+            }
+        }
     }
     post {
         always {
             sh "rm -f passerelle-imio-aes-meal_*.deb"
         }
-
     }
 }
