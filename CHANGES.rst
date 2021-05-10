@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.1.1m
+------------------
+- always use last item of list instead of using index to validate 
+  [nhislaire]
+
 0.1.1l
 ------------------
 - manage multi-select choice
