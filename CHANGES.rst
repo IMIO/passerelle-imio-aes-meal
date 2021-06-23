@@ -1,9 +1,17 @@
 Changelog
 =========
 
+0.1.2
+------------------
+- update versionning scheme to remove letters
+- set django2.2 as required
+- use only python3 as programming language
+- force fpm to use python3
+  [nhislaire]
+
 0.1.1m
 ------------------
-- always use last item of list instead of using index to validate 
+- always use last item of list instead of using index to validate user's choice
   [nhislaire]
 
 0.1.1l
