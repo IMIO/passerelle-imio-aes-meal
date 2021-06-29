@@ -1,6 +1,7 @@
 from django.views.generic import View, CreateView, DeleteView, UpdateView
 from django.views.generic.detail import SingleObjectMixin
-from django.core.urlresolvers import reverse
+from django.urls import reverse
+
 
 from .models import ImioTs1Datasources, MotivationTerm, DestinationTerm
 
