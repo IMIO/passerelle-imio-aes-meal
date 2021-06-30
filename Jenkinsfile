@@ -60,5 +60,8 @@ pipeline {
         always {
             sh "rm -f passerelle-imio-aes-meal_*.deb"
         }
+        success {
+            cleanWs()
+        }
     }
 }

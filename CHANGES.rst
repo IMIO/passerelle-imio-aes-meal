@@ -1,11 +1,16 @@
 Changelog
 =========
 
+0.1.4
+------------------
+- clean workspace after successful build
+  [nhislaire]
+
 0.1.3
 ------------------
 - set django required version from 1.11 to 2.3
 - do not auto build dependencies in fpm command
-[nhi]
+  [nhislaire]
 
 0.1.2
 ------------------
