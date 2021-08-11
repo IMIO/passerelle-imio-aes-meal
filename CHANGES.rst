@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.1.5
+------------------
+- fix split in csvfile
+  [nhislaire]
+
 0.1.4
 ------------------
 - clean workspace after successful build

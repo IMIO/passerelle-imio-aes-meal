@@ -213,7 +213,7 @@ class ImioAesMeal(BaseResource):
         :param menu_file: str
         :return: list
         """
-        month_menu = [day_menu.split('|') for day_menu in menu_file.split('\r\n') if len(day_menu) > 1]
+        month_menu = [day_menu.split('|') for day_menu in menu_file.split('\n') if len(day_menu) > 1]
         return month_menu
 
     def set_choice(self, day, meal_category, meal):
