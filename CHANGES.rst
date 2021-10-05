@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.1.6
+------------------
+- add -k to avoid SSL error following the Infra advice about that
+  [dmshd]
+
 0.1.5
 ------------------
 - fix split in csvfile
