@@ -12,9 +12,11 @@ class inst(install):
         path = os.getcwd().replace(" ", "\ ").replace("(","\(").replace(")","\)") + "/bin/"
         os.system("sh "+path+"install_imio-ts-aes.sh")
 
+version = "0.1.7"
+
 setup(
     name='passerelle-imio-aes-meal',
-    author='iMio',
+    author='iA Teleservices',
     author_email='support-ts@imio.be',
     packages=find_packages(),
     include_package_data=True,

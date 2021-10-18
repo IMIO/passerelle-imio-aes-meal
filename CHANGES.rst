@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.1.7
+------------------
+- set author to ia teleservices team
+- refactor jenkinsfile to use function
+- put version in setup.py
+  [nhi]
+
 0.1.6
 ------------------
 - add -k to avoid SSL error following the Infra advice about that
