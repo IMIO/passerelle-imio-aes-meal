@@ -1,3 +1,3 @@
 iateleservicesCreateDeb (
-  packageName: "passerelle-imio-aes-health",
+  packageName: "passerelle-imio-aes-meal",
 )
