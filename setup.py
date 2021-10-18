@@ -14,8 +14,8 @@ class inst(install):
 
 setup(
     name='passerelle-imio-aes-meal',
-    author='Christophe Boulanger',
-    author_email='christophe.boulanger@imio.be',
+    author='iMio',
+    author_email='support-ts@imio.be',
     packages=find_packages(),
     include_package_data=True,
     url='https://github.com/IMIO/passerelle-imio-aes-meal',
