@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.1.8
+------------------
+- remove passerelle.compat
+  [nhi]
+
 0.1.7
 ------------------
 - set author to ia teleservices team
