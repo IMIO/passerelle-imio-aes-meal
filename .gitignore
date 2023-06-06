@@ -2,3 +2,5 @@
 *.pyc
 *.swp
 *.map
+*.egg-info
+__pycache__
